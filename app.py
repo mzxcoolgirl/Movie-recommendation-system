@@ -2,6 +2,8 @@ import streamlit as st
 import pickle
 import pandas as pd
 import requests
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 # Fetch movie poster using TMDB API
 def fetch_poster(movie_id):
@@ -27,12 +29,19 @@ def recommend(movie):
 
     return recommended_movies, recommended_posters
 
-# Load data
+
+# ------------------ MAIN ------------------
+
+# Load movie data
 movies_dict = pickle.load(open('movie_dict.pkl', 'rb'))
 movies = pd.DataFrame(movies_dict)
-similarity = pickle.load(open('similarity.pkl', 'rb'))
 
-# App title
+# ✅ Build similarity matrix dynamically (no need for similarity.pkl)
+cv = CountVectorizer(max_features=5000, stop_words='english')
+vectors = cv.fit_transform(movies['tags']).toarray()
+similarity = cosine_similarity(vectors)
+
+# Streamlit App
 st.title('🎬 Movie Recommender System')
 
 # Movie selection
